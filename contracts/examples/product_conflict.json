@@ -1,0 +1,161 @@
+{
+  "_comment": "Example: Conflict product — sources disagree on pressure and material; both attributes flagged for human review.",
+  "id": "c4a2b1d5-9f6e-4c0a-b123-4d8e7f0a1b2c",
+  "mpn": "GV-4800-CS-FL",
+  "brand": "FlowMaster",
+  "description": "Flanged carbon steel gate valve, 2 inch, ANSI Class 150",
+  "pipeline_status": "needs_review",
+  "current_step": null,
+  "source_count": 4,
+  "evidence_count": 3,
+  "needs_review_count": 2,
+  "enriched_at": "2026-08-19T11:05:30Z",
+  "created_at": "2026-08-19T11:00:00Z",
+  "updated_at": "2026-08-19T11:05:30Z",
+  "attributes": [
+    {
+      "name": "category",
+      "value": "Gate Valve",
+      "status": "verified",
+      "confidence_score": 0.99,
+      "conflict_summary": null,
+      "review_note": null,
+      "validated_at": "2026-08-19T11:05:05Z",
+      "reviewed_at": null,
+      "candidates": [
+        {
+          "value": "Gate Valve",
+          "source_id": "src-101",
+          "source_type": "manufacturer_datasheet",
+          "source_url": "https://flowmaster.com/datasheets/gv4800.pdf",
+          "extraction_note": "Product family title: 'GV-4800 Series Gate Valves'",
+          "confidence_score": 1.0
+        }
+      ]
+    },
+    {
+      "name": "material",
+      "value": "Carbon Steel",
+      "status": "conflict",
+      "confidence_score": 0.61,
+      "conflict_summary": "Manufacturer datasheet specifies 'ASTM A216 WCB Carbon Steel'; authorized distributor lists 'A105 Carbon Steel Forged'. These are distinct material grades with different mechanical properties.",
+      "review_note": null,
+      "validated_at": "2026-08-19T11:05:06Z",
+      "reviewed_at": null,
+      "candidates": [
+        {
+          "value": "ASTM A216 WCB Carbon Steel",
+          "source_id": "src-101",
+          "source_type": "manufacturer_datasheet",
+          "source_url": "https://flowmaster.com/datasheets/gv4800.pdf",
+          "extraction_note": "Specifications table: 'Body Material: ASTM A216 WCB'",
+          "confidence_score": 1.0
+        },
+        {
+          "value": "A105 Carbon Steel Forged",
+          "source_id": "src-103",
+          "source_type": "authorized_distributor",
+          "source_url": "https://reginald-industrial.com/products/gv-4800-cs-fl",
+          "extraction_note": "Attribute field: 'Material: A105 Carbon Steel Forged'",
+          "confidence_score": 0.88
+        },
+        {
+          "value": "Carbon Steel",
+          "source_id": "src-104",
+          "source_type": "marketplace_listing",
+          "source_url": "https://amazon.com/dp/B08GV4800X",
+          "extraction_note": "Generic 'Carbon Steel' listed with no grade specification",
+          "confidence_score": 0.42
+        }
+      ]
+    },
+    {
+      "name": "pressure",
+      "value": "285 PSI",
+      "status": "conflict",
+      "confidence_score": 0.59,
+      "conflict_summary": "Manufacturer datasheet states 285 PSI for Class 150 rating. One distributor page shows 300 PSI. The 300 PSI figure may be a rounded or incorrect listing — Class 150 ANSI standard is 285 PSI at 100°F.",
+      "review_note": null,
+      "validated_at": "2026-08-19T11:05:07Z",
+      "reviewed_at": null,
+      "candidates": [
+        {
+          "value": "285 PSI",
+          "source_id": "src-101",
+          "source_type": "manufacturer_datasheet",
+          "source_url": "https://flowmaster.com/datasheets/gv4800.pdf",
+          "extraction_note": "Pressure-temperature table: 'Class 150, 100°F: 285 PSI'",
+          "confidence_score": 1.0
+        },
+        {
+          "value": "300 PSI",
+          "source_id": "src-103",
+          "source_type": "authorized_distributor",
+          "source_url": "https://reginald-industrial.com/products/gv-4800-cs-fl",
+          "extraction_note": "Spec field: 'Pressure Rating: 300 PSI' — likely rounding error",
+          "confidence_score": 0.70
+        }
+      ]
+    },
+    {
+      "name": "connection",
+      "value": "ANSI Class 150 Flanged",
+      "status": "verified",
+      "confidence_score": 0.97,
+      "conflict_summary": null,
+      "review_note": null,
+      "validated_at": "2026-08-19T11:05:08Z",
+      "reviewed_at": null,
+      "candidates": [
+        {
+          "value": "ANSI Class 150 Flanged",
+          "source_id": "src-101",
+          "source_type": "manufacturer_datasheet",
+          "source_url": "https://flowmaster.com/datasheets/gv4800.pdf",
+          "extraction_note": "End connection: 'RF Flanged, ASME B16.5 Class 150'",
+          "confidence_score": 1.0
+        }
+      ]
+    },
+    {
+      "name": "temperature_range",
+      "value": "-29°C to 425°C",
+      "status": "verified",
+      "confidence_score": 0.95,
+      "conflict_summary": null,
+      "review_note": null,
+      "validated_at": "2026-08-19T11:05:09Z",
+      "reviewed_at": null,
+      "candidates": [
+        {
+          "value": "-29°C to 425°C",
+          "source_id": "src-101",
+          "source_type": "manufacturer_datasheet",
+          "source_url": "https://flowmaster.com/datasheets/gv4800.pdf",
+          "extraction_note": "P-T rating table operating range for WCB material class",
+          "confidence_score": 1.0
+        }
+      ]
+    },
+    {
+      "name": "description",
+      "value": "2-inch ANSI Class 150 flanged gate valve in carbon steel construction. Suitable for steam, water, oil, and gas service. Raised face (RF) end connections per ASME B16.5.",
+      "status": "verified",
+      "confidence_score": 0.88,
+      "conflict_summary": null,
+      "review_note": null,
+      "validated_at": "2026-08-19T11:05:10Z",
+      "reviewed_at": null,
+      "candidates": [
+        {
+          "value": "2-inch ANSI Class 150 flanged gate valve in carbon steel construction. Suitable for steam, water, oil, and gas service. Raised face (RF) end connections per ASME B16.5.",
+          "source_id": "src-102",
+          "source_type": "official_product_page",
+          "source_url": "https://flowmaster.com/products/gv4800",
+          "extraction_note": "LLM-synthesized from product overview and key features section",
+          "confidence_score": 0.88
+        }
+      ]
+    }
+  ]
+}

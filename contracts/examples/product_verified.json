@@ -1,0 +1,185 @@
+{
+  "_comment": "Example: Clean verified product — all attributes extracted with high confidence from multiple agreeing sources.",
+  "id": "b3f1a2c4-8e5d-4b9f-a012-3c7d6e9f0b1a",
+  "mpn": "V-7200-SS-NPT",
+  "brand": "ValveTech",
+  "description": "Full-port 2-piece 316SS ball valve, 1/2 inch NPT",
+  "pipeline_status": "completed",
+  "current_step": null,
+  "source_count": 4,
+  "evidence_count": 4,
+  "needs_review_count": 0,
+  "enriched_at": "2026-08-19T10:22:45Z",
+  "created_at": "2026-08-19T10:20:00Z",
+  "updated_at": "2026-08-19T10:22:45Z",
+  "attributes": [
+    {
+      "name": "category",
+      "value": "Ball Valve",
+      "status": "verified",
+      "confidence_score": 1.0,
+      "conflict_summary": null,
+      "review_note": null,
+      "validated_at": "2026-08-19T10:22:10Z",
+      "reviewed_at": null,
+      "candidates": [
+        {
+          "value": "Ball Valve",
+          "source_id": "src-001",
+          "source_type": "manufacturer_datasheet",
+          "source_url": "https://valvetech.com/datasheets/v7200.pdf",
+          "extraction_note": "Product family heading: 'V-7200 Series Ball Valves'",
+          "confidence_score": 1.0
+        },
+        {
+          "value": "Ball Valve",
+          "source_id": "src-002",
+          "source_type": "official_product_page",
+          "source_url": "https://valvetech.com/products/v7200",
+          "extraction_note": "Page title and breadcrumb confirm 'Ball Valve' category",
+          "confidence_score": 0.98
+        }
+      ]
+    },
+    {
+      "name": "material",
+      "value": "316 Stainless Steel",
+      "status": "verified",
+      "confidence_score": 0.97,
+      "conflict_summary": null,
+      "review_note": null,
+      "validated_at": "2026-08-19T10:22:11Z",
+      "reviewed_at": null,
+      "candidates": [
+        {
+          "value": "316 Stainless Steel",
+          "source_id": "src-001",
+          "source_type": "manufacturer_datasheet",
+          "source_url": "https://valvetech.com/datasheets/v7200.pdf",
+          "extraction_note": "Specifications table row: 'Body Material: 316 SS'",
+          "confidence_score": 1.0
+        },
+        {
+          "value": "316 Stainless Steel",
+          "source_id": "src-003",
+          "source_type": "authorized_distributor",
+          "source_url": "https://grainger.com/product/v7200-ss-npt",
+          "extraction_note": "Product detail page attribute: 'Material: 316 Stainless Steel'",
+          "confidence_score": 0.95
+        }
+      ]
+    },
+    {
+      "name": "pressure",
+      "value": "1000 PSI",
+      "status": "verified",
+      "confidence_score": 0.99,
+      "conflict_summary": null,
+      "review_note": null,
+      "validated_at": "2026-08-19T10:22:12Z",
+      "reviewed_at": null,
+      "candidates": [
+        {
+          "value": "1000 PSI",
+          "source_id": "src-001",
+          "source_type": "manufacturer_datasheet",
+          "source_url": "https://valvetech.com/datasheets/v7200.pdf",
+          "extraction_note": "Specifications table row: 'Max. Working Pressure: 1000 PSI'",
+          "confidence_score": 1.0
+        },
+        {
+          "value": "1000 PSI",
+          "source_id": "src-002",
+          "source_type": "official_product_page",
+          "source_url": "https://valvetech.com/products/v7200",
+          "extraction_note": "Feature bullet: 'Rated to 1000 PSI'",
+          "confidence_score": 0.98
+        },
+        {
+          "value": "1000 PSI",
+          "source_id": "src-003",
+          "source_type": "authorized_distributor",
+          "source_url": "https://grainger.com/product/v7200-ss-npt",
+          "extraction_note": "Attribute: 'Max. Pressure Rating: 1000 PSI'",
+          "confidence_score": 0.95
+        }
+      ]
+    },
+    {
+      "name": "connection",
+      "value": "NPT 1/2\"",
+      "status": "verified",
+      "confidence_score": 0.96,
+      "conflict_summary": null,
+      "review_note": null,
+      "validated_at": "2026-08-19T10:22:13Z",
+      "reviewed_at": null,
+      "candidates": [
+        {
+          "value": "NPT 1/2\"",
+          "source_id": "src-001",
+          "source_type": "manufacturer_datasheet",
+          "source_url": "https://valvetech.com/datasheets/v7200.pdf",
+          "extraction_note": "End connection table: '1/2\" NPT Female'",
+          "confidence_score": 1.0
+        },
+        {
+          "value": "1/2 inch NPT",
+          "source_id": "src-003",
+          "source_type": "authorized_distributor",
+          "source_url": "https://grainger.com/product/v7200-ss-npt",
+          "extraction_note": "Connection type attribute; normalized to canonical form",
+          "confidence_score": 0.93
+        }
+      ]
+    },
+    {
+      "name": "temperature_range",
+      "value": "-20°C to 180°C",
+      "status": "verified",
+      "confidence_score": 0.94,
+      "conflict_summary": null,
+      "review_note": null,
+      "validated_at": "2026-08-19T10:22:14Z",
+      "reviewed_at": null,
+      "candidates": [
+        {
+          "value": "-20°C to 180°C",
+          "source_id": "src-001",
+          "source_type": "manufacturer_datasheet",
+          "source_url": "https://valvetech.com/datasheets/v7200.pdf",
+          "extraction_note": "Specifications table: 'Operating Temperature: -20°C to 180°C'",
+          "confidence_score": 1.0
+        },
+        {
+          "value": "-4°F to 356°F",
+          "source_id": "src-003",
+          "source_type": "authorized_distributor",
+          "source_url": "https://grainger.com/product/v7200-ss-npt",
+          "extraction_note": "Listed in °F; converted and normalized to °C for canonical form",
+          "confidence_score": 0.89
+        }
+      ]
+    },
+    {
+      "name": "description",
+      "value": "Full-port, 2-piece 316 stainless steel ball valve with 1/2\" NPT female connections. Rated for 1000 PSI working pressure and -20°C to 180°C operating temperature. Suitable for water, oil, and gas applications.",
+      "status": "verified",
+      "confidence_score": 0.91,
+      "conflict_summary": null,
+      "review_note": null,
+      "validated_at": "2026-08-19T10:22:15Z",
+      "reviewed_at": null,
+      "candidates": [
+        {
+          "value": "Full-port, 2-piece 316 stainless steel ball valve with 1/2\" NPT female connections. Rated for 1000 PSI working pressure and -20°C to 180°C operating temperature. Suitable for water, oil, and gas applications.",
+          "source_id": "src-002",
+          "source_type": "official_product_page",
+          "source_url": "https://valvetech.com/products/v7200",
+          "extraction_note": "LLM-synthesized from product overview paragraph and specifications table",
+          "confidence_score": 0.91
+        }
+      ]
+    }
+  ]
+}

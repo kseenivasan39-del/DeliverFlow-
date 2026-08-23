@@ -1,0 +1,803 @@
+openapi: "3.1.0"
+
+info:
+  title: DeliverFlow API
+  version: "1.0.0"
+  description: |
+    AI-powered product intelligence pipeline for industrial commerce.
+
+    DeliverFlow ingests a Manufacturer Part Number (MPN), discovers evidence
+    across structured sources, extracts attributes via LLM, validates and
+    confidence-scores each value, routes conflicts to human review, and
+    exports a final verified product record.
+
+    **Demo category:** Industrial Valves
+  contact:
+    name: DeliverFlow Team
+    url: https://github.com/deliverflow/deliverflow
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Local development
+  - url: https://api.deliverflow.dev
+    description: Hackathon demo deployment
+
+tags:
+  - name: Products
+    description: Create and retrieve product records
+  - name: Enrichment
+    description: Trigger and monitor the AI enrichment pipeline
+  - name: Evidence
+    description: Browse raw evidence retrieved during enrichment
+  - name: Review
+    description: Human-in-the-loop review of flagged attributes
+  - name: Export
+    description: Export verified product records
+
+# ─────────────────────────────────────────────
+# PATHS
+# ─────────────────────────────────────────────
+
+paths:
+
+  /products:
+    post:
+      operationId: createProduct
+      summary: Create a new product record
+      description: |
+        Registers an MPN with its brand and a short description.
+        No enrichment is triggered automatically — call
+        `POST /products/{id}/enrich` to start the pipeline.
+      tags: [Products]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductRequest"
+            example:
+              mpn: "V-7200-SS-NPT"
+              brand: "ValveTech"
+              description: "Full-port 2-piece 316SS ball valve, 1/2 inch NPT"
+      responses:
+        "201":
+          description: Product record created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "409":
+          description: MPN already exists for this brand
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /products/{id}:
+    get:
+      operationId: getProduct
+      summary: Get a product record by ID
+      description: Returns the full product record including all attributes and their current statuses.
+      tags: [Products]
+      parameters:
+        - $ref: "#/components/parameters/ProductId"
+      responses:
+        "200":
+          description: Product found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /products/{id}/enrich:
+    post:
+      operationId: enrichProduct
+      summary: Trigger the AI enrichment pipeline
+      description: |
+        Starts the six-step enrichment pipeline asynchronously:
+        1. `discovering_sources`
+        2. `retrieving_evidence`
+        3. `extracting_attributes`
+        4. `validating_values`
+        5. `assigning_confidence`
+        6. `preparing_product_record`
+
+        Poll `GET /products/{id}` to track `pipeline_status` and `current_step`.
+      tags: [Enrichment]
+      parameters:
+        - $ref: "#/components/parameters/ProductId"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnrichRequest"
+      responses:
+        "202":
+          description: Pipeline accepted and running
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnrichmentResult"
+        "409":
+          description: Enrichment already in progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /products/{id}/evidence:
+    get:
+      operationId: getEvidence
+      summary: List all evidence for a product
+      description: Returns all raw evidence records retrieved during the enrichment pipeline.
+      tags: [Evidence]
+      parameters:
+        - $ref: "#/components/parameters/ProductId"
+        - name: source_type
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/SourceType"
+          description: Filter evidence by source type
+      responses:
+        "200":
+          description: Evidence list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [product_id, evidence, total]
+                properties:
+                  product_id:
+                    type: string
+                    format: uuid
+                  evidence:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Evidence"
+                  total:
+                    type: integer
+                    minimum: 0
+        "404":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /products/{id}/review:
+    post:
+      operationId: submitReview
+      summary: Submit human review actions for flagged attributes
+      description: |
+        Accepts one or more `ReviewAction` objects.
+        Each action targets a specific attribute and either accepts,
+        edits, or rejects the candidate value.
+
+        After all `needs_review` attributes are resolved, the product
+        record transitions to `pipeline_status: completed`.
+      tags: [Review]
+      parameters:
+        - $ref: "#/components/parameters/ProductId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [actions]
+              properties:
+                actions:
+                  type: array
+                  minItems: 1
+                  items:
+                    $ref: "#/components/schemas/ReviewAction"
+            example:
+              actions:
+                - attribute_name: pressure
+                  action: accept
+                  reviewer_note: "Confirmed against manufacturer datasheet"
+                - attribute_name: material
+                  action: edit
+                  edited_value: "316L Stainless Steel"
+                  reviewer_note: "Source used 316SS shorthand; corrected to full grade"
+      responses:
+        "200":
+          description: Review actions applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "400":
+          description: Invalid review action (e.g. attribute not in needs_review state)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /products/{id}/export/json:
+    get:
+      operationId: exportJson
+      summary: Export the product record as JSON
+      description: |
+        Returns the final, verified product record as a downloadable JSON file.
+        Only available when `pipeline_status` is `completed`.
+      tags: [Export]
+      parameters:
+        - $ref: "#/components/parameters/ProductId"
+      responses:
+        "200":
+          description: JSON export
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: 'attachment; filename="V-7200-SS-NPT.json"'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductExport"
+        "409":
+          description: Pipeline not yet completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /products/{id}/export/csv:
+    get:
+      operationId: exportCsv
+      summary: Export the product record as CSV
+      description: |
+        Returns the final product record as a flat CSV file suitable for
+        import into spreadsheets or PIM systems.
+        Only available when `pipeline_status` is `completed`.
+      tags: [Export]
+      parameters:
+        - $ref: "#/components/parameters/ProductId"
+      responses:
+        "200":
+          description: CSV export
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: 'attachment; filename="V-7200-SS-NPT.csv"'
+          content:
+            text/csv:
+              schema:
+                type: string
+                description: |
+                  Flat CSV with one row per attribute.
+                  Columns: mpn, brand, attribute_name, value, status, confidence_score, source_url
+        "409":
+          description: Pipeline not yet completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+# ─────────────────────────────────────────────
+# COMPONENTS
+# ─────────────────────────────────────────────
+
+components:
+
+  parameters:
+    ProductId:
+      name: id
+      in: path
+      required: true
+      description: Unique product record identifier (UUID v4)
+      schema:
+        type: string
+        format: uuid
+      example: "b3f1a2c4-8e5d-4b9f-a012-3c7d6e9f0b1a"
+
+  # ─── ENUMS ────────────────────────────────
+
+  schemas:
+
+    PipelineStep:
+      type: string
+      description: Ordered steps in the DeliverFlow enrichment pipeline
+      enum:
+        - discovering_sources
+        - retrieving_evidence
+        - extracting_attributes
+        - validating_values
+        - assigning_confidence
+        - preparing_product_record
+
+    PipelineStatus:
+      type: string
+      description: Overall status of the enrichment pipeline run
+      enum:
+        - pending
+        - running
+        - needs_review
+        - completed
+        - failed
+
+    AttributeName:
+      type: string
+      description: Canonical attribute names for industrial valve products
+      enum:
+        - category
+        - material
+        - pressure
+        - connection
+        - temperature_range
+        - description
+
+    SourceType:
+      type: string
+      description: Classification of the evidence source
+      enum:
+        - manufacturer_datasheet
+        - official_product_page
+        - authorized_distributor
+        - distributor_page
+        - marketplace_listing
+
+    AttributeStatus:
+      type: string
+      description: |
+        Current state of an extracted attribute value.
+
+        Lifecycle:
+          extracted → verified | low_confidence | conflict | missing
+          verified | low_confidence | conflict → needs_review (if flagged)
+          needs_review → accepted | edited | rejected
+      enum:
+        - verified
+        - low_confidence
+        - conflict
+        - missing
+        - needs_review
+        - accepted
+        - edited
+        - rejected
+        - unknown
+
+    ReviewActionType:
+      type: string
+      description: The decision a human reviewer makes on a flagged attribute
+      enum:
+        - accept
+        - edit
+        - reject
+
+    # ─── CORE SCHEMAS ─────────────────────────
+
+    Source:
+      type: object
+      description: A discovered source of product information
+      required:
+        - id
+        - url
+        - source_type
+        - discovered_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique source identifier
+        url:
+          type: string
+          format: uri
+          description: Full URL of the source
+        source_type:
+          $ref: "#/components/schemas/SourceType"
+        domain:
+          type: string
+          description: Hostname extracted from the URL
+          example: "valvetech.com"
+        title:
+          type: string
+          description: Page or document title, if available
+          example: "V-7200 Series Ball Valve – Product Datasheet"
+        reliability_score:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: |
+            Source reliability weight used during confidence calculation.
+            manufacturer_datasheet = 1.0, marketplace_listing = 0.4.
+          example: 1.0
+        discovered_at:
+          type: string
+          format: date-time
+
+    Evidence:
+      type: object
+      description: Raw text evidence retrieved from a single source
+      required:
+        - id
+        - product_id
+        - source
+        - raw_text
+        - retrieved_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        source:
+          $ref: "#/components/schemas/Source"
+        raw_text:
+          type: string
+          description: Extracted text from the source page or document
+          example: "Material: 316 Stainless Steel. Max Pressure: 1000 PSI. Temperature: -20°C to 180°C."
+        retrieved_at:
+          type: string
+          format: date-time
+        extraction_error:
+          type: string
+          nullable: true
+          description: Non-null if text extraction failed; pipeline continues with other sources
+          example: null
+
+    CandidateValue:
+      type: object
+      description: |
+        A single candidate value for an attribute, extracted from one source.
+        An attribute may have multiple candidates when sources disagree.
+      required:
+        - value
+        - source_id
+        - confidence_score
+      properties:
+        value:
+          type: string
+          description: The extracted value as a normalized string
+          example: "1000 PSI"
+        source_id:
+          type: string
+          format: uuid
+          description: ID of the Source this value was extracted from
+        source_type:
+          $ref: "#/components/schemas/SourceType"
+        source_url:
+          type: string
+          format: uri
+          example: "https://valvetech.com/datasheets/v7200.pdf"
+        extraction_note:
+          type: string
+          nullable: true
+          description: LLM reasoning or extraction context for this value
+          example: "Found in specifications table, row 'Max. Working Pressure'"
+        confidence_score:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Per-candidate confidence (source reliability × extraction clarity)
+          example: 0.97
+
+    Attribute:
+      type: object
+      description: |
+        A structured product attribute with its best value, all candidate
+        values from different sources, and its current review status.
+      required:
+        - name
+        - status
+        - candidates
+      properties:
+        name:
+          $ref: "#/components/schemas/AttributeName"
+        value:
+          type: string
+          nullable: true
+          description: |
+            The winning value — highest confidence candidate, or the
+            human-edited/accepted value after review. Null if missing.
+          example: "1000 PSI"
+        status:
+          $ref: "#/components/schemas/AttributeStatus"
+        confidence_score:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          nullable: true
+          description: |
+            Aggregate confidence score for the chosen value.
+            Null when status is `missing`.
+          example: 0.94
+        candidates:
+          type: array
+          description: All candidate values considered for this attribute
+          items:
+            $ref: "#/components/schemas/CandidateValue"
+        conflict_summary:
+          type: string
+          nullable: true
+          description: Human-readable summary of why candidates conflict, if applicable
+          example: "Two sources report 1000 PSI; one distributor page reports 750 PSI"
+        review_note:
+          type: string
+          nullable: true
+          description: Reviewer note left during human review
+          example: "Confirmed against manufacturer datasheet rev. D"
+        validated_at:
+          type: string
+          format: date-time
+          nullable: true
+        reviewed_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    ReviewAction:
+      type: object
+      description: A single human review decision on a flagged attribute
+      required:
+        - attribute_name
+        - action
+      properties:
+        attribute_name:
+          $ref: "#/components/schemas/AttributeName"
+        action:
+          $ref: "#/components/schemas/ReviewActionType"
+        edited_value:
+          type: string
+          nullable: true
+          description: Required when action is `edit`. The corrected value.
+          example: "316L Stainless Steel"
+        reviewer_note:
+          type: string
+          nullable: true
+          description: Optional context note from the human reviewer
+          example: "Source used shorthand; corrected to full material grade"
+        reviewed_by:
+          type: string
+          nullable: true
+          description: Reviewer identifier (name, email, or role — no auth required for demo)
+          example: "demo-reviewer"
+
+    Product:
+      type: object
+      description: |
+        A DeliverFlow product record. Starts as a stub on creation and
+        is progressively enriched by the pipeline.
+      required:
+        - id
+        - mpn
+        - brand
+        - description
+        - pipeline_status
+        - attributes
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        mpn:
+          type: string
+          description: Manufacturer Part Number
+          example: "V-7200-SS-NPT"
+        brand:
+          type: string
+          example: "ValveTech"
+        description:
+          type: string
+          description: Short human-supplied description used to seed source discovery
+          example: "Full-port 2-piece 316SS ball valve, 1/2 inch NPT"
+        pipeline_status:
+          $ref: "#/components/schemas/PipelineStatus"
+        current_step:
+          $ref: "#/components/schemas/PipelineStep"
+          nullable: true
+          description: Active pipeline step. Null when pipeline is not running.
+        attributes:
+          type: array
+          description: All extracted and validated attributes for this product
+          items:
+            $ref: "#/components/schemas/Attribute"
+        source_count:
+          type: integer
+          minimum: 0
+          description: Number of sources discovered during enrichment
+          example: 4
+        evidence_count:
+          type: integer
+          minimum: 0
+          description: Number of evidence records retrieved
+          example: 3
+        needs_review_count:
+          type: integer
+          minimum: 0
+          description: Number of attributes currently requiring human review
+          example: 1
+        enriched_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp when pipeline completed (any status)
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    EnrichmentResult:
+      type: object
+      description: Immediate response after triggering the enrichment pipeline
+      required:
+        - product_id
+        - pipeline_status
+        - current_step
+        - started_at
+      properties:
+        product_id:
+          type: string
+          format: uuid
+        pipeline_status:
+          $ref: "#/components/schemas/PipelineStatus"
+        current_step:
+          $ref: "#/components/schemas/PipelineStep"
+        started_at:
+          type: string
+          format: date-time
+        estimated_seconds:
+          type: integer
+          description: Rough estimate of pipeline duration in seconds
+          example: 15
+
+    EnrichRequest:
+      type: object
+      description: Optional configuration overrides for an enrichment run
+      properties:
+        force:
+          type: boolean
+          default: false
+          description: Re-run enrichment even if already completed. Overwrites existing attributes.
+        source_types:
+          type: array
+          description: Limit discovery to specific source types
+          items:
+            $ref: "#/components/schemas/SourceType"
+        confidence_threshold:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          default: 0.75
+          description: |
+            Attributes with confidence below this threshold will be flagged
+            as `needs_review` instead of `verified`.
+
+    CreateProductRequest:
+      type: object
+      required:
+        - mpn
+        - brand
+        - description
+      properties:
+        mpn:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Manufacturer Part Number
+          example: "V-7200-SS-NPT"
+        brand:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "ValveTech"
+        description:
+          type: string
+          minLength: 5
+          maxLength: 500
+          description: Short description used to seed source discovery
+          example: "Full-port 2-piece 316SS ball valve, 1/2 inch NPT"
+
+    ProductExport:
+      type: object
+      description: Flat, export-ready product record
+      required:
+        - mpn
+        - brand
+        - pipeline_status
+        - attributes
+        - exported_at
+      properties:
+        mpn:
+          type: string
+          example: "V-7200-SS-NPT"
+        brand:
+          type: string
+          example: "ValveTech"
+        pipeline_status:
+          $ref: "#/components/schemas/PipelineStatus"
+        attributes:
+          type: object
+          description: |
+            Key-value map of attribute_name → export record.
+            Only includes attributes with a non-null value.
+          additionalProperties:
+            type: object
+            required: [value, status, confidence_score]
+            properties:
+              value:
+                type: string
+              status:
+                $ref: "#/components/schemas/AttributeStatus"
+              confidence_score:
+                type: number
+                format: float
+                nullable: true
+              source_url:
+                type: string
+                format: uri
+                nullable: true
+        exported_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      description: Standard error envelope
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Machine-readable error code
+          example: "product_not_found"
+        message:
+          type: string
+          description: Human-readable explanation
+          example: "No product found with id b3f1a2c4-8e5d-4b9f-a012-3c7d6e9f0b1a"
+        details:
+          type: object
+          nullable: true
+          description: Additional structured context, if available
+          additionalProperties: true
