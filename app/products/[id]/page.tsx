@@ -228,25 +228,44 @@ export default function ProductDashboard({ params }: { params: Promise<{ id: str
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 max-w-3xl">
           <h2 className="font-bold text-slate-800 border-b border-slate-100 pb-4 mb-8">Processing History</h2>
           <div className="space-y-8 relative before:absolute before:inset-0 before:ml-[1.1rem] before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-200">
-             <div className="relative flex items-start gap-5">
-                <div className="w-9 h-9 rounded-full bg-[#ECFDF3] border-4 border-white shadow-sm flex items-center justify-center shrink-0 z-10">
-                  <CheckCircle2 className="w-4 h-4 text-[#16A34A]" />
-                </div>
-                <div className="pt-1.5">
-                  <p className="text-sm font-bold text-slate-800">Product Verified & Finalized</p>
-                  <p className="text-xs text-slate-500 mt-1">Just now</p>
-                </div>
-             </div>
+             
+             {(product.status === 'reviewed' || overallConfidence >= 80) && (
+               <div className="relative flex items-start gap-5">
+                  <div className="w-9 h-9 rounded-full bg-[#ECFDF3] border-4 border-white shadow-sm flex items-center justify-center shrink-0 z-10">
+                    <CheckCircle2 className="w-4 h-4 text-[#16A34A]" />
+                  </div>
+                  <div className="pt-1.5">
+                    <p className="text-sm font-bold text-slate-800">
+                      {product.status === 'reviewed' ? 'Manually Verified by Human Reviewer' : 'Auto-Verified by AI Pipeline'}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">Just now</p>
+                  </div>
+               </div>
+             )}
+
+             {product.status === 'rejected' && (
+               <div className="relative flex items-start gap-5">
+                  <div className="w-9 h-9 rounded-full bg-red-50 border-4 border-white shadow-sm flex items-center justify-center shrink-0 z-10">
+                    <AlertCircle className="w-4 h-4 text-[#DC2626]" />
+                  </div>
+                  <div className="pt-1.5">
+                    <p className="text-sm font-bold text-slate-800">Rejected by Human Reviewer</p>
+                    <p className="text-xs text-slate-500 mt-1">Product flagged for correction</p>
+                  </div>
+               </div>
+             )}
+
              <div className="relative flex items-start gap-5">
                 <div className="w-9 h-9 rounded-full bg-blue-50 border-4 border-white shadow-sm flex items-center justify-center shrink-0 z-10">
                   <CheckCircle2 className="w-4 h-4 text-[#0969DA]" />
                 </div>
                 <div className="pt-1.5">
                   <p className="text-sm font-bold text-slate-800">AI Extraction Completed</p>
-                  <p className="text-sm text-slate-600 mt-1">Gemini 1.5 Flash successfully mapped {safeAttributes.length} attributes.</p>
+                  <p className="text-sm text-slate-600 mt-1">Llama 3 70B (Groq) successfully mapped {safeAttributes.length} attributes.</p>
                   <p className="text-xs text-slate-500 mt-1">A few seconds ago</p>
                 </div>
              </div>
+
              <div className="relative flex items-start gap-5">
                 <div className="w-9 h-9 rounded-full bg-slate-100 border-4 border-white shadow-sm flex items-center justify-center shrink-0 z-10">
                   <Circle className="w-4 h-4 text-slate-400" />
