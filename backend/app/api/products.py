@@ -102,6 +102,18 @@ def review_product(product_id: int, review: ReviewUpdate, session: Session = Dep
     session.refresh(product)
     return product
 
+@router.post("/{product_id}/reject", response_model=ProductResponse)
+def reject_product(product_id: int, session: Session = Depends(get_session)):
+    product = session.get(Product, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+        
+    product.status = "rejected"
+    session.add(product)
+    session.commit()
+    session.refresh(product)
+    return product
+
 @router.get("/{product_id}/export/json", response_model=ProductResponse)
 def export_json(product_id: int, session: Session = Depends(get_session)):
     product = session.get(Product, product_id)

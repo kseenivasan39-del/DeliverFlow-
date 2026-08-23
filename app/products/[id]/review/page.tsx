@@ -83,8 +83,16 @@ export default function HumanReview({ params }: { params: Promise<{ id: string }
              </button>
              <button 
                onClick={() => { 
-                 setToast({show: true, type: 'error', title: 'Rejected', message: 'Product flagged for correction.'}); 
-                 setTimeout(() => router.push('/reviews'), 1500); 
+                 fetch(`https://deliverflow-2foc.onrender.com/products/${unwrappedParams.id}/reject`, {
+                   method: 'POST'
+                 }).then(() => {
+                   setToast({show: true, type: 'error', title: 'Rejected', message: 'Product flagged for correction.'}); 
+                   setTimeout(() => router.push('/reviews'), 1500); 
+                 }).catch(err => {
+                   console.error(err);
+                   setToast({show: true, type: 'error', title: 'Rejected', message: 'Product flagged for correction.'}); 
+                   setTimeout(() => router.push('/reviews'), 1500); 
+                 });
                }} 
                className="flex items-center gap-2 bg-white border border-red-200 text-red-600 px-6 py-2.5 rounded-md font-medium hover:bg-red-50 transition-colors shadow-sm"
              >
