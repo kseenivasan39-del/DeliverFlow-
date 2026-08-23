@@ -64,7 +64,7 @@ export default function NewProduct() {
                  
                  if (rowMpn && rowMpn !== '-- Unbranded --' && rowMpn !== 'null') {
                      try {
-                         const res = await fetch('http://localhost:8000/products', {
+                         const res = await fetch('https://deliverflow-2foc.onrender.com/products', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ mpn: rowMpn, brand: rowBrand, description: rowDesc })
@@ -74,7 +74,7 @@ export default function NewProduct() {
                          
                          // Enrich sequentially with a 2-second delay to throttle against rate limits
                          if (data.id) {
-                           await fetch(`http://localhost:8000/products/${data.id}/enrich`, { method: 'POST' });
+                           await fetch(`https://deliverflow-2foc.onrender.com/products/${data.id}/enrich`, { method: 'POST' });
                            // Pause to respect API limits
                            await new Promise(r => setTimeout(r, 2000));
                          }
@@ -109,7 +109,7 @@ export default function NewProduct() {
       }
       setIsProcessingCsv(true);
       
-      const res = await fetch('http://localhost:8000/products', {
+      const res = await fetch('https://deliverflow-2foc.onrender.com/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mpn, brand, description })

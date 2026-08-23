@@ -8,7 +8,7 @@ export default function ExportsPage() {
   const [backendProducts, setBackendProducts] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:8000/products')
+    fetch('https://deliverflow-2foc.onrender.com/products')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -206,10 +206,10 @@ export default function ExportsPage() {
                     <td className="px-6 py-4 text-slate-600">{p.brand}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <a href={`http://localhost:8000/products/${p.id.replace('p', '')}/export/json`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[#0969DA] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded transition-colors border border-blue-100">
+                        <a href={`https://deliverflow-2foc.onrender.com/products/${p.id.replace('p', '')}/export/json`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[#0969DA] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded transition-colors border border-blue-100">
                           JSON
                         </a>
-                        <a href={`http://localhost:8000/products/${p.id.replace('p', '')}/export/csv`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[#16A34A] bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded transition-colors border border-green-100">
+                        <a href={`https://deliverflow-2foc.onrender.com/products/${p.id.replace('p', '')}/export/csv`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[#16A34A] bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded transition-colors border border-green-100">
                           CSV
                         </a>
                       </div>

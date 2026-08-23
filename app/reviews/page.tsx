@@ -13,7 +13,7 @@ export default function ReviewsInbox() {
 
   useEffect(() => {
     // Initial fetch
-    fetch('http://localhost:8000/products')
+    fetch('https://deliverflow-2foc.onrender.com/products')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -27,7 +27,7 @@ export default function ReviewsInbox() {
     if (!isProcessing) return;
 
     const interval = setInterval(() => {
-      fetch('http://localhost:8000/products')
+      fetch('https://deliverflow-2foc.onrender.com/products')
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) {

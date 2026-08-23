@@ -9,7 +9,7 @@ export default function Dashboard() {
   const [backendProducts, setBackendProducts] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:8000/products')
+    fetch('https://deliverflow-2foc.onrender.com/products')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -72,7 +72,7 @@ export default function Dashboard() {
           <button 
             onClick={async () => {
               if(confirm('Are you sure you want to clear the entire database?')) {
-                await fetch('http://localhost:8000/products/reset', { method: 'DELETE' });
+                await fetch('https://deliverflow-2foc.onrender.com/products/reset', { method: 'DELETE' });
                 setBackendProducts([]);
               }
             }}
