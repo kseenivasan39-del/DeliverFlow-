@@ -14,7 +14,7 @@ export default function Processing({ params }: { params: Promise<{ id: string }>
   useEffect(() => {
     if (!fetchedRef.current) {
       fetchedRef.current = true;
-      fetch(`http://localhost:8000/products/${unwrappedParams.id}/enrich`, { method: 'POST' })
+      fetch(`https://deliverflow-2foc.onrender.com/products/${unwrappedParams.id}/enrich`, { method: 'POST' })
         .then(() => {
           apiDoneRef.current = true;
         })

@@ -12,7 +12,7 @@ export default function ProductDashboard({ params }: { params: Promise<{ id: str
   const unwrappedParams = use(params);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/products/${unwrappedParams.id}`)
+    fetch(`https://deliverflow-2foc.onrender.com/products/${unwrappedParams.id}`)
       .then(res => {
         if (!res.ok) throw new Error('Not found');
         return res.json();
@@ -110,10 +110,10 @@ export default function ProductDashboard({ params }: { params: Promise<{ id: str
             </div>
             
             <div className="flex gap-4">
-               <a href={`http://localhost:8000/products/${product.id}/export/json`} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-md text-sm font-medium hover:bg-slate-50">
+               <a href={`https://deliverflow-2foc.onrender.com/products/${product.id}/export/json`} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-md text-sm font-medium hover:bg-slate-50">
                  <Download className="w-4 h-4"/> Export JSON
                </a>
-               <a href={`http://localhost:8000/products/${product.id}/export/csv`} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#0969DA] text-white rounded-md text-sm font-medium hover:bg-blue-700">
+               <a href={`https://deliverflow-2foc.onrender.com/products/${product.id}/export/csv`} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#0969DA] text-white rounded-md text-sm font-medium hover:bg-blue-700">
                  <Download className="w-4 h-4"/> Export CSV
                </a>
             </div>

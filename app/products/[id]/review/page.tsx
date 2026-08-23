@@ -11,7 +11,7 @@ export default function HumanReview({ params }: { params: Promise<{ id: string }
   const [toast, setToast] = useState<{show: boolean, type: 'success' | 'warning' | 'error', title: string, message: string}>({show: false, type: 'success', title: '', message: ''});
 
   useEffect(() => {
-    fetch(`http://localhost:8000/products/${unwrappedParams.id}`)
+    fetch(`https://deliverflow-2foc.onrender.com/products/${unwrappedParams.id}`)
       .then(res => res.json())
       .then(data => setProduct(data))
       .catch(console.error);
@@ -64,7 +64,7 @@ export default function HumanReview({ params }: { params: Promise<{ id: string }
            <div className="flex flex-wrap gap-3 animate-in fade-in">
              <button 
                onClick={() => {
-                 fetch(`http://localhost:8000/products/${unwrappedParams.id}/review`, {
+                 fetch(`https://deliverflow-2foc.onrender.com/products/${unwrappedParams.id}/review`, {
                    method: 'POST',
                    headers: { 'Content-Type': 'application/json' },
                    body: JSON.stringify({ attributes: {} })
