@@ -7,11 +7,20 @@ import { CheckCircle2, Loader2, Circle } from 'lucide-react';
 export default function Processing({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [progress, setProgress] = useState(0);
+  const [productMpn, setProductMpn] = useState('Product...');
   const unwrappedParams = use(params);
   const fetchedRef = useRef(false);
   const apiDoneRef = useRef(false);
 
   useEffect(() => {
+    // Fetch basic info immediately to show the name
+    fetch(`https://deliverflow-2foc.onrender.com/products/${unwrappedParams.id}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d && d.mpn) setProductMpn(d.mpn);
+      })
+      .catch(console.error);
+
     if (!fetchedRef.current) {
       fetchedRef.current = true;
       fetch(`https://deliverflow-2foc.onrender.com/products/${unwrappedParams.id}/enrich`, { method: 'POST' })
@@ -67,7 +76,7 @@ export default function Processing({ params }: { params: Promise<{ id: string }>
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#062E6F]">Analyzing VAL-316-100...</h1>
+        <h1 className="text-2xl font-bold text-[#062E6F]">Analyzing {productMpn}...</h1>
         <p className="text-slate-500">Our AI is discovering, extracting and validating product information.</p>
       </div>
 
