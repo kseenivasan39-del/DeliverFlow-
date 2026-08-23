@@ -7,16 +7,45 @@ import { dashboardProducts, mockProduct } from '@/data/mockProducts';
 export default function ReviewsInbox() {
   const [backendProducts, setBackendProducts] = useState<any[]>([]);
 
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(true);
+  const [prevCount, setPrevCount] = useState(-1);
+
   useEffect(() => {
+    // Initial fetch
     fetch('http://localhost:8000/products')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
           setBackendProducts(data);
+          setTotalProducts(data.length);
+          setPrevCount(data.length);
         }
       })
       .catch(console.error);
-  }, []);
+
+    if (!isProcessing) return;
+
+    const interval = setInterval(() => {
+      fetch('http://localhost:8000/products')
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            if (prevCount !== -1 && data.length === prevCount && data.length > 0) {
+              // If count stopped increasing, assume processing is finished
+              setIsProcessing(false);
+            } else if (data.length >= 2000) {
+              setIsProcessing(false);
+            }
+            setPrevCount(data.length);
+            setTotalProducts(data.length);
+            setBackendProducts(data);
+          }
+        })
+        .catch(console.error);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [prevCount, isProcessing]);
 
   const calculateConfidence = (p: any) => {
     let score = 98;
@@ -75,7 +104,13 @@ export default function ReviewsInbox() {
           <p className="text-sm text-slate-500 mt-1">Human-in-the-loop validation for AI extractions with low confidence or conflicts.</p>
         </div>
         <div className="flex gap-4 items-center">
-          <div className="text-right">
+          {isProcessing && totalProducts < 2000 && (
+            <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm animate-in fade-in zoom-in duration-300">
+               <div className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></div>
+               Processing {totalProducts} / 2000 rows
+            </div>
+          )}
+          <div className="text-right ml-4">
             <div className="text-2xl font-bold text-[#DC2626]">{uniqueQueue.length}</div>
             <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending</div>
           </div>
