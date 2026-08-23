@@ -10,6 +10,8 @@ export default function ReviewsInbox() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [isProcessing, setIsProcessing] = useState(true);
   const [prevCount, setPrevCount] = useState(-1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterReason, setFilterReason] = useState<string>('All');
 
   useEffect(() => {
     // Initial fetch
@@ -96,6 +98,22 @@ export default function ReviewsInbox() {
   // De-duplicate just for the mock UI
   const uniqueQueue = Array.from(new Map(reviewQueue.map(item => [item.id, item])).values());
 
+  const uniqueReasons = Array.from(new Set(uniqueQueue.map(p => p.reviewReason || 'Low AI Confidence')));
+
+  const filteredQueue = uniqueQueue.filter(p => {
+    const searchLower = searchQuery.toLowerCase();
+    const matchesSearch = !searchQuery || 
+      p.mpn?.toLowerCase().includes(searchLower) || 
+      p.brand?.toLowerCase().includes(searchLower) || 
+      (Array.isArray(p.attributes) && p.attributes.some((a: any) => 
+        a.name?.toLowerCase().includes(searchLower) || a.value?.toLowerCase().includes(searchLower)
+      ));
+      
+    const matchesFilter = filterReason === 'All' || (p.reviewReason || 'Low AI Confidence') === filterReason;
+    
+    return matchesSearch && matchesFilter;
+  });
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500">
       <div className="flex justify-between items-end">
@@ -111,7 +129,7 @@ export default function ReviewsInbox() {
             </div>
           )}
           <div className="text-right ml-4">
-            <div className="text-2xl font-bold text-[#DC2626]">{uniqueQueue.length}</div>
+            <div className="text-2xl font-bold text-[#DC2626]">{filteredQueue.length}</div>
             <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending</div>
           </div>
         </div>
@@ -124,11 +142,24 @@ export default function ReviewsInbox() {
             type="text" 
             placeholder="Search pending reviews by MPN, Brand, or attribute..." 
             className="w-full pl-9 pr-4 py-2 bg-slate-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-[#0969DA]/20 outline-none"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
-          <Filter className="w-4 h-4" /> Filter
-        </button>
+        <div className="relative">
+          <select 
+            className="appearance-none flex items-center gap-2 pl-9 pr-8 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 bg-white outline-none cursor-pointer"
+            value={filterReason}
+            onChange={(e) => setFilterReason(e.target.value)}
+          >
+            <option value="All">All Reasons</option>
+            {uniqueReasons.map(reason => (
+              <option key={reason} value={reason}>{reason}</option>
+            ))}
+          </select>
+          <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-500 w-0 h-0"></div>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -142,7 +173,7 @@ export default function ReviewsInbox() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {uniqueQueue.map(p => (
+            {filteredQueue.map(p => (
               <tr key={p.id} className="hover:bg-slate-50/80 transition-colors group">
                 <td className="px-6 py-4">
                   <p className="font-bold text-[#0B132B] group-hover:text-[#0969DA] transition-colors">{p.mpn}</p>
@@ -169,7 +200,7 @@ export default function ReviewsInbox() {
               </tr>
             ))}
             
-            {uniqueQueue.length === 0 && (
+            {filteredQueue.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
                   <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3 opacity-20" />
